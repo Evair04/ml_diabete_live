@@ -35,6 +35,7 @@ def save_prediction(pessoa_json: Any = Body(None)):
 
 @api.post("/predict/")
 def predict(pessoa_json: Any = Body(None)):
+    
     pessoa = json.loads(pessoa_json)
 
     result = data_handler.survival_predict(pessoa)

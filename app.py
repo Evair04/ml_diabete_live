@@ -6,6 +6,7 @@ import pandas as pd
 import pickle
 import requests
 import json
+import numpy as np
 
 if not util.check_password():
     st.stop()  # Do not continue if check_password is not True.
@@ -75,9 +76,21 @@ with col3:
     submit = st.button('Verificar')
 
 if(submit or 'diabete' in st.session_state):
-    paciente = [vezesEngravidou, glicose, pressao, espessuraPele, insulina, imc, funcaoPedigree, idade]
-
-    paciente_json = json.dumps(paciente)
+    paciente = {
+        "vezesEngravidou": vezesEngravidou,
+        "glicose": glicose,
+        "pressao": pressao,
+        "espessuraPele": espessuraPele,
+        "insulina": insulina,
+        "imc": imc,
+        "funcaoPedigree": funcaoPedigree,
+        "idade": idade
+    }
+    
+    paciente_array = np.array(list(paciente.values()))
+    lista_resultados = paciente_array.tolist()
+  
+    paciente_json = json.dumps(lista_resultados)
 
     response = requests.post(f'{API_URL}/predict/', json=paciente_json)
 
@@ -125,7 +138,7 @@ if(submit or 'diabete' in st.session_state):
                 paciente['CorrectPrediction'] = False
 
             # adiciona no dict do passageiro se ele sobreviveu ou não
-            paciente['Survived'] = st.session_state['survived']
+            paciente['Diabete'] = st.session_state['diabete']
 
             # escreve a mensagem na tela
             st.write(message)
@@ -137,7 +150,7 @@ if(submit or 'diabete' in st.session_state):
             response = requests.post(f'{API_URL}/save_prediction/', json=paciente_json)
 
             if response.status_code == 200:
-                print("passageiro salvo")
+                print("paciente salvo")
             else:
                 print("Error: ", response.status_code)
 
@@ -150,8 +163,8 @@ if(submit or 'diabete' in st.session_state):
             new_test = st.button('Iniciar Nova Análise')
 
             # se o usuário pressionar no botão e já existe um passageiro, remove ele do cache
-            if new_test and 'survived' in st.session_state:
-                del st.session_state['survived']
+            if new_test and 'diabete' in st.session_state:
+                del st.session_state['diabete']
                 st.rerun()
         accuracy_predictions_on = st.toggle('Exibir acurácia')
 
@@ -172,9 +185,9 @@ if(submit or 'diabete' in st.session_state):
 
             correct_predictions = 0
 
-            for index, passageiro in enumerate(predictions):
+            for index, paciente in enumerate(predictions):
                 total = index + 1
-                if passageiro['CorrectPrediction'] == True:
+                if paciente['CorrectPrediction'] == True:
                     correct_predictions += 1
 
                 temp_accuracy = correct_predictions / total if total else 0
