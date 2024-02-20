@@ -48,7 +48,7 @@ with col1:
 with col2:
     imc = st.number_input('Índice de massa corporal (peso em kg/(altura em m)^2)', min_value=0, max_value=100, value=50, step=1)
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     funcaoPedigree = st.number_input('Função de pedigree do diabetes', min_value=0.00, max_value=3.00, value=1.50, step=0.01)
@@ -56,30 +56,7 @@ with col1:
 with col2:
     idade = st.number_input('Idade', min_value=0, max_value=120, value=30, step=1)
 
-# with col2:
-#     classes = ['Male', 'Female']
-#     sex = st.selectbox('Sex', classes)
-
-# with col3:
-#     age = st.number_input('Age', min_value=0, max_value=100, value=0, step=1)
-
-col1, col2, col3 = st.columns([2,2,1])
-
-with col1:
-    sib_sp = st.number_input('Number of siblings/spouses aboard', step=1)
-
-with col2:
-    par_ch = st.number_input('Number of parents/children aboard', step=1)
-
 with col3:
-    fare = st.number_input('Passenger fare')
-
-col1, col2 = st.columns(2)
-
-with col1:
-    classes = ['Cherbourg', 'Queenstown', 'Southampton']
-    embarked = st.selectbox('Port of Embarkation', classes)
-with col2:
     submit = st.button('Verificar')
 
 if(submit or 'survived' in st.session_state):
