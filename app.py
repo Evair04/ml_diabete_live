@@ -86,11 +86,10 @@ if(submit or 'diabete' in st.session_state):
         "funcaoPedigree": funcaoPedigree,
         "idade": idade
     }
-    
-    paciente_array = np.array(list(paciente.values()))
-    lista_resultados = paciente_array.tolist()
-  
-    paciente_json = json.dumps(lista_resultados)
+
+    array = [paciente['vezesEngravidou'], paciente['glicose'], paciente['pressao'], paciente['espessuraPele'], paciente['insulina'], paciente['imc'], paciente['funcaoPedigree'], paciente['idade']]
+
+    paciente_json = json.dumps(array)
 
     response = requests.post(f'{API_URL}/predict/', json=paciente_json)
 
