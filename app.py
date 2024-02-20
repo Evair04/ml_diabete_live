@@ -78,19 +78,18 @@ if(submit or 'diabete' in st.session_state):
     paciente = [vezesEngravidou, glicose, pressao, espessuraPele, insulina, imc, funcaoPedigree, idade]
 
     paciente_json = json.dumps(paciente)
-    
+
     response = requests.post(f'{API_URL}/predict/', json=paciente_json)
 
-    results = None
+    result = None
 
     if response.status_code == 200:
-        results = response.json()
+        result = response.json()
     else:
         print("Error: ", response.status_code)
 
-    print(results)
-    if results is not None:
-        diabete = int(results[0])
+    if result is not None:
+        diabete = result
         if diabete == 1:
             st.subheader('Paciente Com Diabetes')
             if 'diabete' in st.session_state:
