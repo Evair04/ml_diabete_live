@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+import pickle
 
 def load_data():
     # Load data from csv file
@@ -14,13 +15,29 @@ def get_all_predictions():
 
     return data
 
-def save_prediction(passageiro):
+def save_prediction(pessoa):
     data = get_all_predictions()
 
     # data = json.loads(data)
-    data.append(passageiro)
+    data.append(pessoa)
 
     with open('prediction.json', 'w') as f:
         json.dump(data, f)
 
     return True
+
+def survival_predict(paciente):
+
+    values = pd.DataFrame([paciente])
+
+    with open('./models/knn_model.pkl', 'rb') as file:
+        model = pickle.load(file)
+
+    results = model.predict(values)
+
+    result = None
+
+    if len(results) == 1:
+        result = int(results[0])
+
+    return result

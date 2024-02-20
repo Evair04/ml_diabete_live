@@ -4,15 +4,30 @@ import util
 import matplotlib.pyplot as plt
 import pandas as pd
 import pickle
+import requests
+import json
 
 if not util.check_password():
     st.stop()  # Do not continue if check_password is not True.
 
-dados = dh.load_data()
+API_URL = 'http://localhost:8000'
+
+
+response = requests.get(f'{API_URL}/get_diabete_data/')
+
+dados = None
+
+if response.status_code == 200:
+    dados_json = json.loads(response.json())
+    dados = pd.DataFrame(dados_json)
+else:
+    print("Error: ", response.status_code)
+
 
 data_analyses_on = st.toggle('Mostrar gráficos')
 
 model = pickle.load(open('./models/modelo_knn.pkl', 'rb'))
+
 
 
 if(data_analyses_on):
@@ -59,51 +74,35 @@ with col2:
 with col3:
     submit = st.button('Verificar')
 
-if(submit or 'survived' in st.session_state):
-    p_class_map = {
-        '1st': 1,
-        '2nd': 2,
-        '3rd': 3
-    }
+if(submit or 'diabete' in st.session_state):
+    paciente = [vezesEngravidou, glicose, pressao, espessuraPele, insulina, imc, funcaoPedigree, idade]
 
-    sex_map = {
-        'Male': 0,
-        'Female': 1
-    }
-    embarked_map = {
-        'Cherbourg': 0,
-        'Queenstown': 1,
-        'Southampton': 2
-    }
-    passageiro = {
-        'Pclass': p_class_map[p_class],
-        'Sex': sex_map[sex],
-        'Age': age,
-        'SibSp': sib_sp,
-        'Parch': par_ch,
-        'Fare': fare,
-        'Embarked': embarked_map[embarked]
-    }
+    paciente_json = json.dumps(paciente)
+    
+    response = requests.post(f'{API_URL}/predict/', json=paciente_json)
 
-    values = pd.DataFrame([passageiro])
-    # st.dataframe(values)
+    results = None
 
-    results = model.predict(values)
+    if response.status_code == 200:
+        results = response.json()
+    else:
+        print("Error: ", response.status_code)
 
-    if len(results) == 1:
-        survived = int(results[0])
-        if survived == 1:
-            st.subheader('Passageiro Sobreviveu')
-            if 'survived' in st.session_state:
+    print(results)
+    if results is not None:
+        diabete = int(results[0])
+        if diabete == 1:
+            st.subheader('Paciente Com Diabetes')
+            if 'diabete' in st.session_state:
                 st.balloons()
         else:
-            st.subheader('Passageiro Não sobreviveu ')
-            if 'survived' in st.session_state:
+            st.subheader('Paciente Sem Diabetes ')
+            if 'diabete' in st.session_state:
                 st.snow()
 
-    st.session_state['survived'] = survived
+    st.session_state['diabete'] = diabete
 
-    if passageiro and 'survived' in st.session_state:
+    if paciente and 'diabete' in st.session_state:
         st.write('A predição está correta?')
 
         col1, col2, col3 = st.columns([1,1,5])
@@ -122,19 +121,28 @@ if(submit or 'survived' in st.session_state):
 
             # adiciona no dict do passageiro se a predição está correta ou não
             if correct_prediction:
-                passageiro['CorrectPrediction'] = True
+                paciente['CorrectPrediction'] = True
             elif wrong_prediction:
-                passageiro['CorrectPrediction'] = False
+                paciente['CorrectPrediction'] = False
 
             # adiciona no dict do passageiro se ele sobreviveu ou não
-            passageiro['Survived'] = st.session_state['survived']
+            paciente['Survived'] = st.session_state['survived']
 
             # escreve a mensagem na tela
             st.write(message)
             print(message)
 
             # salva a predição no JSON para cálculo das métricas de avaliação do sistema
-            dh.save_prediction(passageiro)
+            paciente_json = json.dumps(paciente)
+
+            response = requests.post(f'{API_URL}/save_prediction/', json=paciente_json)
+
+            if response.status_code == 200:
+                print("passageiro salvo")
+            else:
+                print("Error: ", response.status_code)
+
+            #dh.save_prediction(paciente)
 
         st.write('')
         # adiciona um botão para permitir o usuário realizar uma nova análise
@@ -150,7 +158,14 @@ if(submit or 'survived' in st.session_state):
 
         if accuracy_predictions_on:
 
-            predictions = dh.get_all_predictions()
+            predictions = None
+
+            response = requests.post(f'{API_URL}/get_all_predictions/', json=dados_json)
+
+            if response.status_code == 200:
+                predictions = response.json()
+            else:
+                print("Error: ", response.status_code)
 
             num_total_predictions = len(predictions)
 
