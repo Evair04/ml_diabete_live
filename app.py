@@ -126,6 +126,7 @@ if(submit or 'diabete' in st.session_state):
         if diabete == 1:
             st.subheader('Paciente Com Diabetes')
             if 'diabete' in st.session_state:
+                # nem queria que aparecesse isso, pq very sad ter diabetes
                 st.snow()
         # caso contrário, o paciente não tem diabete
         else:
