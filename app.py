@@ -126,12 +126,12 @@ if(submit or 'diabete' in st.session_state):
         if diabete == 1:
             st.subheader('Paciente Com Diabetes')
             if 'diabete' in st.session_state:
-                st.balloons()
+                st.snow()
         # caso contrário, o paciente não tem diabete
         else:
             st.subheader('Paciente Sem Diabetes ')
             if 'diabete' in st.session_state:
-                st.snow()
+                st.balloons()
 
         # adiciona o resultado da predição no cache
         st.session_state['diabete'] = diabete
